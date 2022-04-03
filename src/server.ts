@@ -14,14 +14,16 @@ app.get('/', async function (req: Request, res: Response) {
     // create new book
     const book: Book = {
         title: 'The Smart Money Tribe',
-        author: 'Arese Ugwu',
+        author: 'Arese',
         total_pages: 356,
         type: 'Financial',
         summary: 'An African Woman Guide To Making Bank' 
     }
 
+    const author = req.query.author as string;
+
     const books = new BooksStore();
-    const result = await books.delete('1');
+    const result = await books.delete(author);
     res.send(result);
     console.log(result);
 })

@@ -54,13 +54,13 @@ app.get('/', function (req, res) {
                 case 0:
                     book = {
                         title: 'The Smart Money Tribe',
-                        author: 'Arese Ugwu',
+                        author: 'Arese',
                         total_pages: 356,
                         type: 'Financial',
                         summary: 'An African Woman Guide To Making Bank'
                     };
                     books = new books_1.BooksStore();
-                    return [4 /*yield*/, books["delete"]('1')];
+                    return [4 /*yield*/, books.index()];
                 case 1:
                     result = _a.sent();
                     res.send(result);

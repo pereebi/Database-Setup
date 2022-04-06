@@ -122,7 +122,7 @@ var BooksStore = /** @class */ (function () {
         });
     };
     // update an item in the database by id
-    BooksStore.prototype.update = function (id, book) {
+    BooksStore.prototype.update = function (id, title, author) {
         return __awaiter(this, void 0, void 0, function () {
             var connection, sql, values, result, error_4;
             return __generator(this, function (_a) {
@@ -133,8 +133,8 @@ var BooksStore = /** @class */ (function () {
                     case 1:
                         connection = _a.sent();
                         sql = 'UPDATE books SET title = $1, author = $2 WHERE id=($3) RETURNING *';
-                        values = [book.title, book.author];
-                        return [4 /*yield*/, connection.query(sql, values, [id])];
+                        values = [title, author, id];
+                        return [4 /*yield*/, connection.query(sql, values)];
                     case 2:
                         result = _a.sent();
                         connection.release();

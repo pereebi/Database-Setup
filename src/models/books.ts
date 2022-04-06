@@ -53,18 +53,18 @@ export class BooksStore {
         }
 
      // update an item in the database by id
-     async update(id: string, book: Book): Promise<Book> {
+     async update(id: string, title: string, author: string): Promise<Book> {
         try {
             // @ts-ignore
             const connection = await client.connect();
             const sql = 'UPDATE books SET title = $1, author = $2 WHERE id=($3) RETURNING *';
-            const values = [book.title, book.author];
-            const result = await connection.query(sql, values, [id]);
+            const values = [title, author, id];
+            const result = await connection.query(sql, values);
             connection.release();
             return result.rows[0];
         } catch (error) {
             throw new Error(`Could not update book ${id}. Error: ${error}`);        }
-        }    
+        }   
 
         // delete from the database
         async delete(id: string): Promise<Book> {

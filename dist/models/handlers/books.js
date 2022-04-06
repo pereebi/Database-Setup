@@ -39,19 +39,26 @@ exports.__esModule = true;
 var books_1 = require("../books");
 var bookHandler = new books_1.BooksStore();
 var index = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var myBooks;
+    var myBooks, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, bookHandler.index()];
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, bookHandler.index()];
             case 1:
                 myBooks = _a.sent();
                 res.json(myBooks);
-                return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 2:
+                error_1 = _a.sent();
+                res.status(400).json(error_1);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
 var create = function (eq, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var book, myBooks, error_1;
+    var book, myBooks, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -69,40 +76,72 @@ var create = function (eq, res) { return __awaiter(void 0, void 0, void 0, funct
                 res.json(myBooks);
                 return [3 /*break*/, 3];
             case 2:
-                error_1 = _a.sent();
-                res.status(400).json(error_1);
+                error_2 = _a.sent();
+                res.status(400).json(error_2);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
     });
 }); };
 var show = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, myBooks;
+    var id, myBooks, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                _a.trys.push([0, 2, , 3]);
                 id = req.params.id;
                 return [4 /*yield*/, bookHandler.show(id)];
             case 1:
                 myBooks = _a.sent();
                 res.json(myBooks);
+                return [3 /*break*/, 3];
+            case 2:
+                error_3 = _a.sent();
+                res.status(400).json(error_3);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+var update = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var id, _a, title, author, myBooks, error_4;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                id = req.params.id;
+                _a = req.body, title = _a.title, author = _a.author;
+                return [4 /*yield*/, bookHandler.update(id, title, author)];
+            case 1:
+                myBooks = _b.sent();
+                res.json(myBooks);
                 console.log(myBooks);
-                return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 2:
+                error_4 = _b.sent();
+                res.status(400).json(error_4);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
 var deleteBook = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, myBooks;
+    var id, myBooks, error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                _a.trys.push([0, 2, , 3]);
                 id = req.params.id;
                 return [4 /*yield*/, bookHandler["delete"](id)];
             case 1:
                 myBooks = _a.sent();
                 res.json(myBooks);
-                console.log(myBooks);
-                return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 2:
+                error_5 = _a.sent();
+                res.status(400).json(error_5);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
@@ -110,6 +149,7 @@ var books_routes = function (app) {
     app.get('/books', index);
     app.post('/books', create);
     app.get('/books/:id', show);
+    app.put('/books/:id', update);
     app["delete"]('/books/:id', deleteBook);
 };
 exports["default"] = books_routes;

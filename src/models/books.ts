@@ -39,32 +39,45 @@ export class BooksStore {
         }
     }
 
-    // get a item from the database
-    async show(author: string): Promise<Book> {
+    // get an item from the database by id
+    async show(id: string): Promise<Book> {
         try {
             // @ts-ignore
             const connection = await client.connect();
-            const sql = 'SELECT * FROM books WHERE author=($1)';
-            const result = await connection.query(sql, [author]);
-            console.log(result);
+            const sql = 'SELECT * FROM books WHERE id=($1)';
+            const result = await connection.query(sql, [id]);
             connection.release();
             return result.rows[0];
         } catch (error) {
-            throw new Error(`Could not find book ${author}. Error: ${error}`);        }
+            throw new Error(`Could not find book ${id}. Error: ${error}`);        }
         }
 
+     // update an item in the database by id
+     async update(id: string, book: Book): Promise<Book> {
+        try {
+            // @ts-ignore
+            const connection = await client.connect();
+            const sql = 'UPDATE books SET title = $1, author = $2 WHERE id=($3) RETURNING *';
+            const values = [book.title, book.author];
+            const result = await connection.query(sql, values, [id]);
+            connection.release();
+            return result.rows[0];
+        } catch (error) {
+            throw new Error(`Could not update book ${id}. Error: ${error}`);        }
+        }    
+
         // delete from the database
-        async delete(author: string): Promise<Book> {
+        async delete(id: string): Promise<Book> {
             try {
                 // @ts-ignore
                 const connection = await client.connect();
-                const sql = 'DELETE FROM books WHERE author=($1)';
-                const result = await connection.query(sql, [author]);
+                const sql = 'DELETE FROM books WHERE id=($1) RETURNING *';
+                const result = await connection.query(sql, [id]);
                 const books = result.rows[0];
                 connection.release();
                 return books;
             } catch (err) {
-                throw new Error(`Could not delete book ${author}. Error: ${err}`)
+                throw new Error(`Could not delete book ${id}. Error: ${err}`)
             }
         }
       

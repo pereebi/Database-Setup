@@ -40,6 +40,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 exports.__esModule = true;
 exports.BooksStore = void 0;
+// @ts-ignore
 var database_1 = __importDefault(require("../database"));
 var BooksStore = /** @class */ (function () {
     function BooksStore() {
@@ -95,8 +96,8 @@ var BooksStore = /** @class */ (function () {
             });
         });
     };
-    // get a item from the database
-    BooksStore.prototype.show = function (author, id) {
+    // get an item from the database by id
+    BooksStore.prototype.show = function (id) {
         return __awaiter(this, void 0, void 0, function () {
             var connection, sql, result, error_3;
             return __generator(this, function (_a) {
@@ -106,16 +107,41 @@ var BooksStore = /** @class */ (function () {
                         return [4 /*yield*/, database_1["default"].connect()];
                     case 1:
                         connection = _a.sent();
-                        sql = 'SELECT * FROM books WHERE author=($1) AND id=($2)';
-                        return [4 /*yield*/, connection.query(sql, [author, id])];
+                        sql = 'SELECT * FROM books WHERE id=($1)';
+                        return [4 /*yield*/, connection.query(sql, [id])];
                     case 2:
                         result = _a.sent();
-                        console.log(result);
                         connection.release();
                         return [2 /*return*/, result.rows[0]];
                     case 3:
                         error_3 = _a.sent();
-                        throw new Error("Could not find book ".concat(author, ". Error: ").concat(error_3));
+                        throw new Error("Could not find book ".concat(id, ". Error: ").concat(error_3));
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    // update an item in the database by id
+    BooksStore.prototype.update = function (id, book) {
+        return __awaiter(this, void 0, void 0, function () {
+            var connection, sql, values, result, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, database_1["default"].connect()];
+                    case 1:
+                        connection = _a.sent();
+                        sql = 'UPDATE books SET title = $1, author = $2 WHERE id=($3) RETURNING *';
+                        values = [book.title, book.author];
+                        return [4 /*yield*/, connection.query(sql, values, [id])];
+                    case 2:
+                        result = _a.sent();
+                        connection.release();
+                        return [2 /*return*/, result.rows[0]];
+                    case 3:
+                        error_4 = _a.sent();
+                        throw new Error("Could not update book ".concat(id, ". Error: ").concat(error_4));
                     case 4: return [2 /*return*/];
                 }
             });
@@ -132,7 +158,7 @@ var BooksStore = /** @class */ (function () {
                         return [4 /*yield*/, database_1["default"].connect()];
                     case 1:
                         connection = _a.sent();
-                        sql = 'DELETE FROM books WHERE id=($1)';
+                        sql = 'DELETE FROM books WHERE id=($1) RETURNING *';
                         return [4 /*yield*/, connection.query(sql, [id])];
                     case 2:
                         result = _a.sent();

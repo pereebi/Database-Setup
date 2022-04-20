@@ -1,5 +1,8 @@
 import express, { Request, Response } from 'express';
 import { Book, BooksStore } from '../books';
+import jwt from 'jsonwebtoken';
+import { verifyAuthToken } from './users';
+
 
 const bookHandler = new BooksStore();
 
@@ -14,15 +17,16 @@ const index = async (req: Request, res: Response) => {
    
 }
 
-const create = async (eq: Request, res: Response ) => {
+const create = async (req: Request, res: Response ) => {
+    const book: Book = {
+        title: req.body.title,
+        author: req.body.author,
+        total_pages: req.body.total_pages,
+        type: req.body.type,
+        summary: req.body.summary 
+    };
+
     try {
-        const book: Book = {
-            title: 'Side Hustle',
-            author: 'Guillebeau',
-            total_pages: 258,
-            type: 'Financial',
-            summary: 'Build a side business and make extra money without quitting your day job.' 
-        }
         const myBooks = await bookHandler.create(book);
         res.json(myBooks);
     } catch (error) {
@@ -46,8 +50,8 @@ const show = async (req: Request, res: Response) => {
 const update = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-        const { title, author } = req.body;
-        const myBooks = await bookHandler.update(id, title, author);
+        const { title, author, total_pages } = req.body;
+        const myBooks = await bookHandler.update(id, title, author, total_pages);
         res.json(myBooks);
         console.log(myBooks);
     } catch (error) {
@@ -71,9 +75,9 @@ const deleteBook = async (req: Request, res: Response) => {
 
 const books_routes = (app: express.Application) => {
     app.get('/books', index);
-    app.post('/books', create);
+    app.post('/books', verifyAuthToken, create);
     app.get('/books/:id', show);
-    app.put('/books/:id', update);
+    app.put('/books/:id', verifyAuthToken, update);
     app.delete('/books/:id', deleteBook);
     
 }

@@ -35,20 +35,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 exports.__esModule = true;
-var books_1 = require("../books");
-var users_1 = require("./users");
-var bookHandler = new books_1.BooksStore();
+exports.verifyAuthToken = void 0;
+var users_1 = require("../users");
+var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+var users = new users_1.UserStore();
 var index = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var myBooks, error_1;
+    var allUsers;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, users.index()];
+            case 1:
+                allUsers = _a.sent();
+                res.json(allUsers);
+                return [2 /*return*/];
+        }
+    });
+}); };
+var show = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var id, thisUser, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, bookHandler.index()];
+                id = req.params.id;
+                return [4 /*yield*/, users.show(id)];
             case 1:
-                myBooks = _a.sent();
-                res.json(myBooks);
+                thisUser = _a.sent();
+                res.json(thisUser);
                 return [3 /*break*/, 3];
             case 2:
                 error_1 = _a.sent();
@@ -59,24 +76,22 @@ var index = function (req, res) { return __awaiter(void 0, void 0, void 0, funct
     });
 }); };
 var create = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var book, myBooks, error_2;
+    var user, newUsers, token, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                book = {
-                    title: req.body.title,
-                    author: req.body.author,
-                    total_pages: req.body.total_pages,
-                    type: req.body.type,
-                    summary: req.body.summary
+                user = {
+                    username: req.body.username,
+                    password: req.body.password
                 };
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, bookHandler.create(book)];
+                return [4 /*yield*/, users.create(user)];
             case 2:
-                myBooks = _a.sent();
-                res.json(myBooks);
+                newUsers = _a.sent();
+                token = jsonwebtoken_1["default"].sign({ user: newUsers }, process.env.TOKEN_SECRET);
+                res.json(token);
                 return [3 /*break*/, 4];
             case 3:
                 error_2 = _a.sent();
@@ -86,39 +101,58 @@ var create = function (req, res) { return __awaiter(void 0, void 0, void 0, func
         }
     });
 }); };
-var show = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, myBooks, error_3;
+var authenticate = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, authenticatedUser, token, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
-                id = req.params.id;
-                return [4 /*yield*/, bookHandler.show(id)];
+                user = {
+                    username: req.body.username,
+                    password: req.body.password
+                };
+                _a.label = 1;
             case 1:
-                myBooks = _a.sent();
-                res.json(myBooks);
-                return [3 /*break*/, 3];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, users.authenticate(req.body.username, req.body.password)];
             case 2:
+                authenticatedUser = _a.sent();
+                token = jsonwebtoken_1["default"].sign({ user: authenticatedUser }, process.env.TOKEN_SECRET);
+                res.json(token);
+                return [3 /*break*/, 4];
+            case 3:
                 error_3 = _a.sent();
-                res.status(400).json(error_3);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
+                res.status(401);
+                res.json({ error: error_3 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
+var verifyAuthToken = function (req, res, next) {
+    try {
+        var authorizationHeader = req.headers.authorization;
+        var token = authorizationHeader === null || authorizationHeader === void 0 ? void 0 : authorizationHeader.split(' ')[1];
+        var decoded = jsonwebtoken_1["default"].verify(token, process.env.TOKEN_SECRET);
+        next();
+    }
+    catch (error) {
+        res.status(401);
+    }
+};
+exports.verifyAuthToken = verifyAuthToken;
 var update = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, _a, title, author, total_pages, myBooks, error_4;
+    var id, _a, username, password, updatedUser, error_4;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 2, , 3]);
                 id = req.params.id;
-                _a = req.body, title = _a.title, author = _a.author, total_pages = _a.total_pages;
-                return [4 /*yield*/, bookHandler.update(id, title, author, total_pages)];
+                _a = req.body, username = _a.username, password = _a.password;
+                return [4 /*yield*/, users.update(id, username, password)];
             case 1:
-                myBooks = _b.sent();
-                res.json(myBooks);
-                console.log(myBooks);
+                updatedUser = _b.sent();
+                res.json(updatedUser);
+                console.log(updatedUser);
                 return [3 /*break*/, 3];
             case 2:
                 error_4 = _b.sent();
@@ -128,17 +162,17 @@ var update = function (req, res) { return __awaiter(void 0, void 0, void 0, func
         }
     });
 }); };
-var deleteBook = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, myBooks, error_5;
+var deleteUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var id, deletedUser, error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 id = req.params.id;
-                return [4 /*yield*/, bookHandler["delete"](id)];
+                return [4 /*yield*/, users["delete"](id)];
             case 1:
-                myBooks = _a.sent();
-                res.json(myBooks);
+                deletedUser = _a.sent();
+                res.json(deletedUser);
                 return [3 /*break*/, 3];
             case 2:
                 error_5 = _a.sent();
@@ -148,11 +182,12 @@ var deleteBook = function (req, res) { return __awaiter(void 0, void 0, void 0, 
         }
     });
 }); };
-var books_routes = function (app) {
-    app.get('/books', index);
-    app.post('/books', users_1.verifyAuthToken, create);
-    app.get('/books/:id', show);
-    app.put('/books/:id', users_1.verifyAuthToken, update);
-    app["delete"]('/books/:id', deleteBook);
+var users_routes = function (app) {
+    app.get('/users', exports.verifyAuthToken, index);
+    app.get('/users/:id', show);
+    app.post('/users', create);
+    app.post('/login', authenticate);
+    app.put('/users/:id', exports.verifyAuthToken, update);
+    app["delete"]('/users/:id', exports.verifyAuthToken, deleteUser);
 };
-exports["default"] = books_routes;
+exports["default"] = users_routes;

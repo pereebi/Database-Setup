@@ -39,16 +39,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-exports.BooksStore = void 0;
-// @ts-ignore
+exports.UserStore = void 0;
+var bcrypt_1 = __importDefault(require("bcrypt"));
+// @ts-ignore 
 var database_1 = __importDefault(require("../database"));
-var BooksStore = /** @class */ (function () {
-    function BooksStore() {
+var pepper = process.env.BCRYPT_PASSWORD;
+var UserStore = /** @class */ (function () {
+    function UserStore() {
     }
     // read the database
-    BooksStore.prototype.index = function () {
+    UserStore.prototype.index = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var connection, sql, res, error_1;
+            var connection, sql, result, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -56,50 +58,24 @@ var BooksStore = /** @class */ (function () {
                         return [4 /*yield*/, database_1["default"].connect()];
                     case 1:
                         connection = _a.sent();
-                        sql = "SELECT * FROM books";
+                        sql = "SELECT * FROM users";
                         return [4 /*yield*/, connection.query(sql)];
-                    case 2:
-                        res = _a.sent();
-                        connection.release();
-                        return [2 /*return*/, res.rows];
-                    case 3:
-                        error_1 = _a.sent();
-                        throw new Error("Cannot get books ".concat(error_1));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    // create a new book in the database
-    BooksStore.prototype.create = function (book) {
-        return __awaiter(this, void 0, void 0, function () {
-            var connection, sql, values, result, error_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 3, , 4]);
-                        return [4 /*yield*/, database_1["default"].connect()];
-                    case 1:
-                        connection = _a.sent();
-                        sql = "INSERT INTO books (title, author, total_pages, type, summary) VALUES($1, $2, $3, $4, $5) RETURNING *";
-                        values = [book.title, book.author, book.total_pages, book.type, book.summary];
-                        return [4 /*yield*/, connection.query(sql, values)];
                     case 2:
                         result = _a.sent();
                         connection.release();
-                        return [2 /*return*/, result.rows[0]];
+                        return [2 /*return*/, result.rows];
                     case 3:
-                        error_2 = _a.sent();
-                        throw new Error("Cannot create new book ".concat(book.title, ". Error: ").concat(error_2));
+                        error_1 = _a.sent();
+                        throw new Error("Cannot get users ".concat(error_1));
                     case 4: return [2 /*return*/];
                 }
             });
         });
     };
-    // get an item from the database by id
-    BooksStore.prototype.show = function (id) {
+    // get a item from the database
+    UserStore.prototype.show = function (id) {
         return __awaiter(this, void 0, void 0, function () {
-            var connection, sql, result, error_3;
+            var connection, sql, result, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -107,22 +83,72 @@ var BooksStore = /** @class */ (function () {
                         return [4 /*yield*/, database_1["default"].connect()];
                     case 1:
                         connection = _a.sent();
-                        sql = 'SELECT * FROM books WHERE id=($1)';
+                        sql = 'SELECT * FROM users WHERE id=($1)';
                         return [4 /*yield*/, connection.query(sql, [id])];
                     case 2:
                         result = _a.sent();
                         connection.release();
                         return [2 /*return*/, result.rows[0]];
                     case 3:
-                        error_3 = _a.sent();
-                        throw new Error("Could not find book ".concat(id, ". Error: ").concat(error_3));
+                        error_2 = _a.sent();
+                        throw new Error("Could not find users ".concat(id, ", Error: ").concat(error_2));
                     case 4: return [2 /*return*/];
                 }
             });
         });
     };
+    UserStore.prototype.create = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var connection, saltRounds, sql, hash, values, result, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, database_1["default"].connect()];
+                    case 1:
+                        connection = _a.sent();
+                        saltRounds = process.env.SALT_ROUNDS;
+                        sql = "INSERT INTO users (username, password_digest) VALUES($1, $2) RETURNING *";
+                        hash = bcrypt_1["default"].hashSync(user.password + pepper, parseInt(saltRounds));
+                        values = [user.username, hash];
+                        return [4 /*yield*/, connection.query(sql, values)];
+                    case 2:
+                        result = _a.sent();
+                        connection.release();
+                        return [2 /*return*/, result.rows[0]];
+                    case 3:
+                        error_3 = _a.sent();
+                        throw new Error("Cannot create new user ".concat(user.username, ". Error: ").concat(error_3));
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    UserStore.prototype.authenticate = function (username, password) {
+        return __awaiter(this, void 0, void 0, function () {
+            var connection, sql, result, user;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, database_1["default"].connect()];
+                    case 1:
+                        connection = _a.sent();
+                        sql = "SELECT password_digest FROM users WHERE username = ($1)";
+                        return [4 /*yield*/, connection.query(sql, [username])];
+                    case 2:
+                        result = _a.sent();
+                        if (result.rows.length) {
+                            user = result.rows[0];
+                            if (bcrypt_1["default"].compareSync(password + pepper, user.password_digest)) {
+                                return [2 /*return*/, user];
+                            }
+                        }
+                        return [2 /*return*/, null];
+                }
+            });
+        });
+    };
     // update an item in the database by id
-    BooksStore.prototype.update = function (id, title, author, total_pages) {
+    UserStore.prototype.update = function (id, username, password) {
         return __awaiter(this, void 0, void 0, function () {
             var connection, sql, values, result, error_4;
             return __generator(this, function (_a) {
@@ -132,8 +158,8 @@ var BooksStore = /** @class */ (function () {
                         return [4 /*yield*/, database_1["default"].connect()];
                     case 1:
                         connection = _a.sent();
-                        sql = 'UPDATE books SET title = $1, author = $2, total_pages = $3 WHERE id=($4) RETURNING *';
-                        values = [title, author, total_pages, id];
+                        sql = 'UPDATE products SET username = $1, password_digest = $2 WHERE id=($3) RETURNING *';
+                        values = [username, password, id];
                         return [4 /*yield*/, connection.query(sql, values)];
                     case 2:
                         result = _a.sent();
@@ -141,14 +167,14 @@ var BooksStore = /** @class */ (function () {
                         return [2 /*return*/, result.rows[0]];
                     case 3:
                         error_4 = _a.sent();
-                        throw new Error("Could not update book ".concat(id, ". Error: ").concat(error_4));
+                        throw new Error("Could not update user ".concat(id, ". Error: ").concat(error_4));
                     case 4: return [2 /*return*/];
                 }
             });
         });
     };
     // delete from the database
-    BooksStore.prototype["delete"] = function (id) {
+    UserStore.prototype["delete"] = function (id) {
         return __awaiter(this, void 0, void 0, function () {
             var connection, sql, result, books, err_1;
             return __generator(this, function (_a) {
@@ -158,7 +184,7 @@ var BooksStore = /** @class */ (function () {
                         return [4 /*yield*/, database_1["default"].connect()];
                     case 1:
                         connection = _a.sent();
-                        sql = 'DELETE FROM books WHERE id=($1) RETURNING *';
+                        sql = 'DELETE FROM users WHERE id=($1) RETURNING *';
                         return [4 /*yield*/, connection.query(sql, [id])];
                     case 2:
                         result = _a.sent();
@@ -167,12 +193,12 @@ var BooksStore = /** @class */ (function () {
                         return [2 /*return*/, books];
                     case 3:
                         err_1 = _a.sent();
-                        throw new Error("Could not delete book ".concat(id, ". Error: ").concat(err_1));
+                        throw new Error("Could not delete user ".concat(id, ". Error: ").concat(err_1));
                     case 4: return [2 /*return*/];
                 }
             });
         });
     };
-    return BooksStore;
+    return UserStore;
 }());
-exports.BooksStore = BooksStore;
+exports.UserStore = UserStore;

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { Book, BooksStore } from '../books';
+import { Book, BooksStore } from '../models/books';
 import jwt from 'jsonwebtoken';
 import { verifyAuthToken } from './users';
 

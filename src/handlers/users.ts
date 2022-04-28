@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { User, UserStore } from '../users';
+import { User, UserStore } from '../models/users';
 import jwt from 'jsonwebtoken';
 
 
